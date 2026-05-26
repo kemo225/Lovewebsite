@@ -33,14 +33,14 @@ export default function MemoriesScene({ onNextScene }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Auto flip card every 4.5 seconds to show text and back side
+  // Auto flip card to back and front to guide the emotional storytelling flow
   useEffect(() => {
     const flipInterval = setInterval(() => {
       setIsFlipped((prev) => !prev);
     }, 4500);
 
     return () => clearInterval(flipInterval);
-  }, [currentIndex]); // Reset interval when active slide changes
+  }, [currentIndex]);
 
   const nextSlide = () => {
     if (isTransitioning) return;
@@ -106,13 +106,13 @@ export default function MemoriesScene({ onNextScene }) {
           <span className="text-romantic-pink font-semibold text-xs tracking-widest uppercase mb-1 block select-none">
             صندوق ذكرياتنا السعيدة 📸
           </span>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-romantic-pink to-romantic-gold text-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] font-amiri leading-relaxed">
-            كل سنه يحيبيبي وانت عيدي ❤️ 
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-romantic-pink to-romantic-gold text-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] font-amiri leading-relaxed select-none">
+            كل لحظة معكِ هي عمرٌ كامل ❤️
           </h2>
         </motion.div>
 
-        {/* 3D Flipping Card Showcase Container */}
-        <div className="relative w-full max-w-[320px] xs:max-w-[340px] sm:max-w-[380px] aspect-[3/4] flex items-center justify-center perspective-1000">
+        {/* 3D Flipping Card Showcase Container (Isolated floating-element here to prevent 3D render bugs) */}
+        <div className="relative w-full max-w-[320px] xs:max-w-[340px] sm:max-w-[370px] aspect-[3/4] flex items-center justify-center perspective-1000 floating-element select-none">
           
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
@@ -122,107 +122,105 @@ export default function MemoriesScene({ onNextScene }) {
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               exit={{ opacity: 0, scale: 0.85, rotateY: direction > 0 ? -30 : 30 }}
               transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-              
-              // Swaying floating animation on the parent container
-              className="w-full h-full preserve-3d relative floating-element cursor-pointer interactive-card select-none"
+              className="w-full h-full preserve-3d relative cursor-pointer interactive-card"
               onClick={() => setIsFlipped(!isFlipped)}
             >
               
-              {/* Inner container to handle the actual 3D rotate transition */}
+              {/* Inner Rotating Wrapper */}
               <div 
-                className="w-full h-full duration-700 preserve-3d relative"
+                className="w-full h-full relative preserve-3d transition-transform duration-700 ease-out"
                 style={{
                   transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  transformStyle: 'preserve-3d'
                 }}
               >
 
                 {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    🃏 CARD FRONT SIDE
+                    🃏 CARD FRONT SIDE (Image Only - Bulletproof 3D separation)
                     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
                 <div 
-                  className="absolute inset-0 bg-[#0f0f0f] p-4 rounded-3xl border border-white/10 shadow-2xl flex flex-col gap-4 backface-hidden"
+                  className="absolute inset-0 w-full h-full rounded-3xl overflow-hidden bg-[#0f0f0f] border border-white/10 flex items-center justify-center p-4"
                   style={{
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(0deg)',
                     boxShadow: `0 20px 40px rgba(0,0,0,0.8), 0 0 30px ${activeMemory.glowColor}`,
                   }}
                 >
-                  {/* Photo Frame (Full Image correctly preserved + cinematic blur background) */}
-                  <div className="relative w-full flex-1 rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
-                    
-                    {/* Blurred background photo layer */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center filter blur-[15px] opacity-40 scale-110 pointer-events-none"
-                      style={{ backgroundImage: `url(${activeMemory.url})` }}
-                    />
-                    
-                    {/* Full photo displaying cleanly with object-contain */}
+                  {/* Blurred background photo layer */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center filter blur-[15px] opacity-40 scale-110 pointer-events-none"
+                    style={{ backgroundImage: `url(${activeMemory.url})` }}
+                  />
+                  
+                  {/* Full photo displaying cleanly with object-contain */}
+                  <div className="relative w-full h-full rounded-2xl overflow-hidden bg-black/45 flex items-center justify-center">
                     <motion.img
                       src={activeMemory.url}
                       alt={activeMemory.title}
                       className="relative z-10 w-full h-full object-contain rounded-2xl select-none"
                       loading="lazy"
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.03 }}
                       transition={{ duration: 0.4 }}
                     />
 
                     {/* Film grain vignette overlay inside photo */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none z-15" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none z-15" />
 
-                    {/* Pulsating heart badge */}
-                    <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md p-1.5 rounded-full border border-white/10 z-20">
+                    {/* Animated heartbeat badge */}
+                    <div className="absolute top-3 right-3 bg-black/55 backdrop-blur-md p-1.5 rounded-full border border-white/10 z-20">
                       <Heart className="w-4 h-4 text-romantic-red fill-romantic-red animate-pulse" />
                     </div>
-                  </div>
 
-                  {/* Title & Floating Hint Icon */}
-                  <div className="text-right flex justify-between items-center px-1">
-                    <div>
-                      <h3 className="text-lg md:text-xl font-bold text-romantic-gold">
-                        {activeMemory.title}
-                      </h3>
-                      <p className="text-[10px] text-white/40 mt-0.5">دوسي لقلب البطاقة وقراءة الرسالة 💫</p>
+                    {/* Touch guide badge */}
+                    <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 z-20 flex items-center gap-1.5">
+                      <RotateCw className="w-3.5 h-3.5 text-romantic-gold animate-spin" style={{ animationDuration: '8s' }} />
+                      <span className="text-[9px] text-white/80 font-medium">انقري للقراءة</span>
                     </div>
-                    <RotateCw className="w-4 h-4 text-romantic-pink opacity-60 animate-spin" style={{ animationDuration: '6s' }} />
                   </div>
                 </div>
 
                 {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    🃏 CARD BACK SIDE
+                    🃏 CARD BACK SIDE (Text/Message Only - Completely isolated)
                     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
                 <div 
-                  className="absolute inset-0 rounded-3xl p-6 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 border border-romantic-pink/20 overflow-hidden"
+                  className="absolute inset-0 w-full h-full rounded-3xl p-6 flex flex-col justify-between items-center text-center overflow-hidden border border-romantic-pink/20"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(15,10,12,0.95), rgba(8,6,8,0.98))',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
+                    background: 'linear-gradient(135deg, rgba(16,10,12,0.98), rgba(8,6,8,0.99))',
                     boxShadow: `0 20px 40px rgba(0,0,0,0.8), 0 0 30px rgba(255, 107, 157, 0.25)`,
                   }}
                 >
-                  {/* Subtle pink backdrop ambient glow */}
-                  <div className="absolute w-[200px] h-[200px] rounded-full bg-romantic-pink/10 blur-[50px] -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  {/* Backdrop glowing sphere */}
+                  <div className="absolute w-[200px] h-[200px] rounded-full bg-romantic-pink/10 blur-[50px] -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                   
-                  {/* Hearts overlay background */}
-                  <FloatingHearts count={6} direction="up" />
+                  {/* Floating particles back overlay */}
+                  <FloatingHearts count={5} direction="up" />
 
-                  {/* Top Quote Icon */}
-                  <div className="text-romantic-pink/30 self-center">
-                    <svg className="w-8 h-8 rotate-180 fill-current" viewBox="0 0 24 24">
+                  {/* Quote decoration */}
+                  <div className="text-romantic-pink/30 mt-4 select-none">
+                    <svg className="w-7 h-7 rotate-180 fill-current" viewBox="0 0 24 24">
                       <path d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3z" />
                     </svg>
                   </div>
 
-                  {/* Message body with premium typography */}
-                  <div className="flex-1 flex flex-col justify-center items-center px-2">
-                    <h4 className="text-lg font-bold text-romantic-gold mb-3 filter drop-shadow-[0_0_8px_rgba(201,168,76,0.3)]">
+                  {/* Center message body with perfect padding preventing edge touching */}
+                  <div className="flex-1 flex flex-col justify-center items-center px-4 w-full select-none">
+                    <h4 className="text-lg sm:text-xl font-bold text-romantic-gold mb-3 filter drop-shadow-[0_0_8px_rgba(201,168,76,0.35)] font-amiri leading-normal">
                       {activeMemory.title}
                     </h4>
-                    <p className="text-sm sm:text-base text-white/95 leading-relaxed font-light text-right select-none">
+                    <p className="text-sm sm:text-base text-white/90 leading-relaxed font-light text-right w-full">
                       {activeMemory.message}
                     </p>
                   </div>
 
-                  {/* Bottom animated beating heart decoration */}
+                  {/* Pulsating heartbeat heart decoration */}
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 1.2, repeat: Infinity }}
-                    className="text-romantic-red mt-2"
+                    className="text-romantic-red mb-4 select-none"
                   >
                     <Heart className="w-6 h-6 fill-current" />
                   </motion.div>
@@ -268,7 +266,7 @@ export default function MemoriesScene({ onNextScene }) {
             onClick={onNextScene}
             className="mt-2 px-8 py-3 rounded-full bg-gradient-to-r from-romantic-red to-romantic-pink text-white font-bold tracking-wide hover:scale-105 active:scale-95 transition-transform duration-300 shadow-lg shadow-romantic-red/20 cursor-pointer text-sm sm:text-base"
           >
-            افتحي رسالة يا فطومي 💌
+            افتحي رسالة قلبي 💌
           </motion.button>
         )}
       </div>
